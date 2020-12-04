@@ -5,15 +5,13 @@ from PIL import Image
 from reportlab.pdfgen import canvas
 
 
-MAX_SIDE = 50
-
-def resize(image_file):
+def resize(image_file, max_dimension):
     '''lowers the resolution of the original image and finds the new colors'''
     im = Image.open(image_file, 'r')
     width, height = im.width, im.height
 
     # resample
-    scale_factor = max(width, height) // MAX_SIDE
+    scale_factor = max(width, height) // max_dimension
     new_width, new_height = width // scale_factor, height // scale_factor
     new_im = Image.new("RGB", (new_width, new_height), '#FFFFFF')
     pixels = new_im.load()
@@ -59,7 +57,7 @@ def closest_color(pixel_color, palette):
     return min(palette, key = lambda c: euclidean_dist(pixel_color, c))
 
 
-def create_stencil(img, palette):
+def create_stencil(img, palette, filepath):
     '''writes out a pdf of the color stencil'''
     rgb_colornames = {v: k for k, v in palette.items()}
 
@@ -90,7 +88,7 @@ def create_stencil(img, palette):
         canvas.drawString(inch, 0.75 * inch, "Page %d %s" % (doc.page - 1, "Color key"))
         canvas.restoreState()
 
-    doc = SimpleDocTemplate("grid.pdf")
+    doc = SimpleDocTemplate(filepath)
     story = []
 
     pixels = img.load()
@@ -113,10 +111,3 @@ def create_stencil(img, palette):
         story.append(p)
         story.append(Spacer(1,0.2*inch))
     doc.build(story, onFirstPage=gridpage_state, onLaterPages=keypage_state)
-
-
-
-
-
-
-
