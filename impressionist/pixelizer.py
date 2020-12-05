@@ -5,9 +5,8 @@ from PIL import Image
 from reportlab.pdfgen import canvas
 
 
-def resize(image_file, max_dimension):
+def shrink(im, max_dimension):
     '''lowers the resolution of the original image and finds the new colors'''
-    im = Image.open(image_file, 'r')
     width, height = im.width, im.height
 
     # resample
@@ -36,6 +35,20 @@ def average_pixel(img, new_x, new_y, scale_factor):
             count += 1
     return sum_r // count, sum_g // count, sum_b // count
 
+def grow(im, scale_factor):
+    '''lowers the resolution of the original image and finds the new colors'''
+    orig_width, orig_height = im.width, im.height
+
+    new_im = Image.new("RGB", (orig_width * scale_factor, orig_height * scale_factor), '#FFFFFF')
+    pixels = new_im.load()
+
+    for x in range(orig_width):
+        for y in range(orig_height):
+            rgb = im.getpixel((x, y))
+            for z in range(scale_factor):
+                for w in range(scale_factor):
+                    pixels[scale_factor * x + z, scale_factor * y + w] = rgb
+    return new_im
 
 def recolor(img, palette):
     '''re-colors the image by choosing the closest colors to the original from a palette'''
